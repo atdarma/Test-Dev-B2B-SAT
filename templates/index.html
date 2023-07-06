@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRUD API Example</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">CRUD API Example</h1>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h3>Create Mahasiswa</h3>
+                <form id="createMahasiswaForm">
+                    <div class="form-group">
+                        <label for="nama">Nama</label>
+                        <input type="text" class="form-control" id="nama" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tgl_lahir">Tanggal Lahir</label>
+                        <input type="date" class="form-control" id="tgl_lahir" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select class="form-control" id="gender" required>
+                            <option value="true">Male</option>
+                            <option value="false">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_jurusan">Jurusan ID</label>
+                        <input type="number" class="form-control" id="id_jurusan" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h3>Edit Mahasiswa</h3>
+                <form id="editMahasiswaForm" style="display: none;">
+                    <input type="hidden" id="editMahasiswaId">
+                    <div class="form-group">
+                        <label for="editNama">Nama</label>
+                        <input type="text" class="form-control" id="editNama" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTgl_lahir">Tanggal Lahir</label>
+                        <input type="date" class="form-control" id="editTgl_lahir" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGender">Gender</label>
+                        <select class="form-control" id="editGender" required>
+                            <option value="true">Male</option>
+                            <option value="false">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editId_jurusan">Jurusan ID</label>
+                        <input type="number" class="form-control" id="editId_jurusan" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelEditMahasiswa()">Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h3>Mahasiswa List</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Tanggal Lahir</th>
+                            <th>Gender</th>
+                            <th>Jurusan</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mahasiswaTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to populate the edit form with Mahasiswa details
+        function populateEditForm(jsonData) {
+            // const mahasiswa = JSON.parse(jsonData);
+            const mahasiswa = jsonData
+            const form = document.getElementById('editMahasiswaForm');
+            form.style.display = 'block';
+            form.elements.editMahasiswaId.value = mahasiswa.id;
+            form.elements.editNama.value = mahasiswa.nama;
+            form.elements.editTgl_lahir.value = mahasiswa.tgl_lahir.substring(0, 10);
+            form.elements.editGender.value = mahasiswa.gender.toString();
+            form.elements.editId_jurusan.value = mahasiswa.id_jurusan;
+        }
+
+
+        // Function to cancel editing and reset the edit form
+        function cancelEditMahasiswa() {
+            const form = document.getElementById('editMahasiswaForm');
+            form.style.display = 'none';
+            form.reset();
+        }
+
+        function fetchMahasiswa() {
+            fetch('http://127.0.0.1:5000/mahasiswa')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                const mahasiswaTableBody = document.getElementById('mahasiswaTableBody');
+                mahasiswaTableBody.innerHTML = '';
+
+                data.forEach(mahasiswa => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${mahasiswa.id}</td>
+                        <td>${mahasiswa.nama}</td>
+                        <td>${mahasiswa.tgl_lahir}</td>
+                        <td>${mahasiswa.gender ? 'Male' : 'Female'}</td>
+                        <td>${mahasiswa.jurusan.nama}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick='populateEditForm(${JSON.stringify(mahasiswa)})'>Edit</button>
+
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="deleteMahasiswa(${mahasiswa.id})">Delete</button>
+                        </td>
+                    `;
+                    mahasiswaTableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function createMahasiswa(event) {
+            event.preventDefault();
+
+            const nama = document.getElementById('nama').value;
+            const tgl_lahir = document.getElementById('tgl_lahir').value;
+            const gender = document.getElementById('gender').value === 'true';
+            const id_jurusan = document.getElementById('id_jurusan').value;
+
+            fetch('http://127.0.0.1:5000/mahasiswa', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nama,
+                    tgl_lahir,
+                    gender,
+                    id_jurusan
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Mahasiswa created:', data);
+                fetchMahasiswa(); // Refresh the mahasiswa table
+                document.getElementById('createMahasiswaForm').reset(); // Reset the form
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function updateMahasiswa(event) {
+    event.preventDefault();
+
+    const mahasiswaId = document.getElementById('editMahasiswaId').value;
+    const nama = document.getElementById('editNama').value;
+    const tgl_lahir = document.getElementById('editTgl_lahir').value;
+    const gender = document.getElementById('editGender').value === 'true';
+    const id_jurusan = document.getElementById('editId_jurusan').value;
+
+    fetch(`http://127.0.0.1:5000/mahasiswa/${mahasiswaId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            nama,
+            tgl_lahir,
+            gender,
+            id_jurusan
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('Mahasiswa updated successfully!');
+                fetchMahasiswa(); // Refresh the mahasiswa table
+                cancelEditMahasiswa(); // Reset and hide the edit form
+            } else {
+                throw new Error('Mahasiswa not found');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+
+        function deleteMahasiswa(mahasiswaId) {
+            if (confirm('Are you sure you want to delete this mahasiswa?')) {
+                fetch(`http://127.0.0.1:5000/mahasiswa/${mahasiswaId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Mahasiswa deleted successfully!');
+                        fetchMahasiswa(); // Refresh the mahasiswa table
+                    } else {
+                        throw new Error('Mahasiswa not found');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        document.getElementById('createMahasiswaForm').addEventListener('submit', createMahasiswa);
+        document.getElementById('editMahasiswaForm').addEventListener('submit', updateMahasiswa);
+        document.addEventListener('DOMContentLoaded', fetchMahasiswa);
+    </script>
+</body>
+</html>
