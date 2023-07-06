@@ -13,7 +13,7 @@ class Mahasiswa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nama = db.Column(db.String(50), nullable=False)
     tgl_lahir = db.Column(db.Date, nullable=False)
-    gender = db.Column(db.Boolean, nullable=False)
+    gender = db.Column(db.Integer, nullable=False)
     id_jurusan = db.Column(db.Integer, db.ForeignKey('jurusan.id'), nullable=False)
     jurusan = db.relationship('Jurusan', backref=db.backref('mahasiswa', lazy=True))
     mahasiswa_hobi = db.relationship('MahasiswaHobi', backref='mahasiswa', lazy=True, cascade='all, delete')
@@ -23,7 +23,7 @@ class Mahasiswa(db.Model):
             'id': self.id,
             'nama': self.nama,
             'tgl_lahir': str(self.tgl_lahir),
-            'gender': self.gender,
+            'gender': int(self.gender),
             'id_jurusan': self.id_jurusan
         }
 
@@ -101,7 +101,7 @@ def update_mahasiswa(mahasiswa_id):
     data = request.get_json()
     mahasiswa.nama = data['nama']
     mahasiswa.tgl_lahir = data['tgl_lahir']
-    mahasiswa.gender = data['gender']
+    mahasiswa.gender = int(data['gender'])
     mahasiswa.id_jurusan = data['id_jurusan']
     db.session.commit()
     return jsonify({
