@@ -1,0 +1,28 @@
+-- Tabel Mahasiswa
+CREATE TABLE mahasiswa (
+    id SERIAL PRIMARY KEY,
+    nama VARCHAR(255),
+    tgl_lahir DATE,
+    gender INTEGER,
+    id_jurusan INTEGER
+);
+
+-- Tabel Hobi
+CREATE TABLE hobi (
+    id SERIAL PRIMARY KEY,
+    nama VARCHAR(255)
+);
+
+-- Tabel Mahasiswa_Hobi
+CREATE TABLE mahasiswa_hobi (
+    id_mahasiswa INTEGER,
+    id_hobi INTEGER,
+    FOREIGN KEY (id_mahasiswa) REFERENCES mahasiswa(id),
+    FOREIGN KEY (id_hobi) REFERENCES hobi(id)
+);
+
+-- Tabel Jurusan
+CREATE TABLE jurusan (
+    id SERIAL PRIMARY KEY,
+    nama VARCHAR(255)
+);
